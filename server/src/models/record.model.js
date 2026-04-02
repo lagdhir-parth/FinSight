@@ -2,6 +2,11 @@ import mongoose from "mongoose";
 
 const recordSchema = new mongoose.Schema(
   {
+    title: {
+      type: String,
+      trim: true,
+      required: true,
+    },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

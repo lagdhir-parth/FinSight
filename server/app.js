@@ -65,6 +65,7 @@ app.use((err, req, res, next) => {
     return res.status(400).json({
       success: false,
       message:
+        err.message ||
         "Validation failed. Required fields might be missing or incorrect.",
       errors: err.errors,
     });
