@@ -22,16 +22,36 @@ const createRecord = asyncHandler(async (req, res) => {
     .json(new ApiResponse(true, "Record created successfully", record));
 });
 
-const getAllRecords = asyncHandler(async (req, res) => {
-  const records = await Record.find({
-    isDeleted: false,
-  })
+const getRecordByPagination = asyncHandler(async (req, res) => {
+  const { page = 1, limit = 10 } = req.query;
+  const skip = (page - 1) * limit;
+  const total = await Record.countDocuments(); // Get total count for frontend
+  const records = await Record.find()
     .sort({ date: -1 })
-    .lean();
+    .limit(limit)
+    .skip(skip);
 
-  return res
-    .status(200)
-    .json(new ApiResponse(true, "Records retrieved successfully", records));
+  if (records.length === 0) {
+    throw new ApiError(404, "No records found for the given page");
+  }
+
+  return res.json(
+    new ApiResponse(200, "Records retrieved successfully", {
+      records,
+      totalPages: Math.ceil(total / limit),
+      currentPage: page,
+    }),
+  );
+});
+
+const getRecordsCount = asyncHandler(async (req, res) => {
+  const count = await Record.countDocuments({ isDeleted: false });
+
+  return res.status(200).json(
+    new ApiResponse(200, "Total records count retrieved successfully", {
+      count,
+    }),
+  );
 });
 
 const getRecordById = asyncHandler(async (req, res) => {
@@ -147,13 +167,51 @@ const permanentlyDeleteRecordById = asyncHandler(async (req, res) => {
     .json(new ApiResponse(true, "Record permanently deleted successfully"));
 });
 
+const searchRecords = asyncHandler(async (req, res) => {
+  const { title, type, category, note } = req.query;
+
+  const filters = {
+    isDeleted: false,
+    $or: [],
+  };
+
+  if (title) {
+    filters.$or.push({ title: { $regex: title, $options: "i" } });
+  }
+
+  if (type) {
+    filters.$or.push({ type: { $regex: type, $options: "i" } });
+  }
+
+  if (category) {
+    filters.$or.push({ category: { $regex: category, $options: "i" } });
+  }
+
+  if (note) {
+    filters.$or.push({ note: { $regex: note, $options: "i" } });
+  }
+
+  // If no search query provided → return all records
+  if (filters.$or.length === 0) {
+    delete filters.$or;
+  }
+
+  const records = await Record.find(filters).sort({ date: -1 });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(true, "Records retrieved successfully", records));
+});
+
 export {
   createRecord,
-  getAllRecords,
+  getRecordByPagination,
+  getRecordsCount,
   getRecordById,
   getUserRecords,
   updateUserRecordById,
   UpdateRecordById,
   deleteRecordById,
   permanentlyDeleteRecordById,
+  searchRecords,
 };

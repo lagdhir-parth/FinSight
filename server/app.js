@@ -34,10 +34,12 @@ app.use(express.urlencoded({ extended: true, limit: "15mb" }));
 import userRoutes from "./src/routes/user.routes.js";
 import recordRoutes from "./src/routes/record.routes.js";
 import authRoutes from "./src/routes/auth.routes.js";
+import dashboardRoutes from "./src/routes/dashboard.routes.js";
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/records", recordRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 // Global Error Handler
 app.use((err, req, res, next) => {

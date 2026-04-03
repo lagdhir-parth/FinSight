@@ -21,8 +21,6 @@ const verifyUser = asyncHandler(async (req, res, next) => {
 
     const { _id } = decoded || {};
 
-    console.log(_id);
-
     const user = await User.findById(_id).select("-password -refreshToken");
 
     if (!user) {

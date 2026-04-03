@@ -1,13 +1,15 @@
 import { Router } from "express";
 import {
   createRecord,
-  getAllRecords,
+  getRecordByPagination,
+  getRecordsCount,
   getUserRecords,
   UpdateRecordById,
   getRecordById,
   deleteRecordById,
   permanentlyDeleteRecordById,
   updateUserRecordById,
+  searchRecords,
 } from "../controllers/record.controller.js";
 import {
   createRecordValidation,
@@ -27,8 +29,10 @@ router.post(
   createRecordValidation,
   createRecord,
 );
-router.get("/", getAllRecords);
+router.get("/", getRecordByPagination);
+router.get("/total-record-count", getRecordsCount);
 router.get("/my-records", getUserRecords);
+router.get("/search", searchRecords);
 router.get("/:id", recordIdValidation, getRecordById);
 router.patch(
   "/update-my-record/:id",
