@@ -25,8 +25,8 @@ const createRecord = asyncHandler(async (req, res) => {
 const getRecordByPagination = asyncHandler(async (req, res) => {
   const { page = 1, limit = 10 } = req.query;
   const skip = (page - 1) * limit;
-  const total = await Record.countDocuments(); // Get total count for frontend
-  const records = await Record.find()
+  const total = await Record.countDocuments({ isDeleted: false }); // Get total count for frontend
+  const records = await Record.find({ isDeleted: false })
     .sort({ date: -1 })
     .limit(limit)
     .skip(skip);
@@ -71,16 +71,31 @@ const getRecordById = asyncHandler(async (req, res) => {
 });
 
 const getUserRecords = asyncHandler(async (req, res) => {
-  const records = await Record.find({
+  const { page = 1, limit = 10 } = req.query;
+  const skip = (page - 1) * limit;
+
+  const filters = {
     createdBy: req.user._id,
     isDeleted: false,
-  })
+  };
+
+  const total = await Record.countDocuments(filters);
+  const records = await Record.find(filters)
     .sort({ date: -1 })
+    .limit(parseInt(limit))
+    .skip(skip)
     .lean();
 
   return res
     .status(200)
-    .json(new ApiResponse(true, "Records retrieved successfully", records));
+    .json(
+      new ApiResponse(200, "Records retrieved successfully", {
+        records,
+        totalPages: Math.ceil(total / limit) || 1,
+        currentPage: parseInt(page),
+        totalRecords: total,
+      })
+    );
 });
 
 const updateUserRecordById = asyncHandler(async (req, res) => {
@@ -167,6 +182,46 @@ const permanentlyDeleteRecordById = asyncHandler(async (req, res) => {
     .json(new ApiResponse(true, "Record permanently deleted successfully"));
 });
 
+const getSoftDeletedRecords = asyncHandler(async (req, res) => {
+  const { page = 1, limit = 10 } = req.query;
+  const skip = (page - 1) * limit;
+
+  const total = await Record.countDocuments({ isDeleted: true });
+  const records = await Record.find({ isDeleted: true })
+    .sort({ updatedAt: -1 })
+    .limit(parseInt(limit))
+    .skip(skip)
+    .populate("createdBy", "name email")
+    .lean();
+
+  return res.json(
+    new ApiResponse(200, "Soft-deleted records retrieved successfully", {
+      records,
+      totalPages: Math.ceil(total / limit) || 1,
+      currentPage: parseInt(page),
+      totalRecords: total,
+    }),
+  );
+});
+
+const restoreRecordById = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  const record = await Record.findOneAndUpdate(
+    { _id: id, isDeleted: true },
+    { isDeleted: false },
+    { new: true },
+  );
+
+  if (!record) {
+    throw new ApiError(404, "Record not found or already restored");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(true, "Record restored successfully", record));
+});
+
 const searchRecords = asyncHandler(async (req, res) => {
   const { title, type, category, note } = req.query;
 
@@ -213,5 +268,7 @@ export {
   UpdateRecordById,
   deleteRecordById,
   permanentlyDeleteRecordById,
+  getSoftDeletedRecords,
+  restoreRecordById,
   searchRecords,
 };

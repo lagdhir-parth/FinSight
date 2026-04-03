@@ -58,12 +58,16 @@ const updateUserByIdValidation = asyncHandler(async (req, res, next) => {
     throw new ApiError(400, "Invalid updates!", [], "ValidationError");
   }
 
-  if (!updateData.email && updateData.email !== "") {
-    throw new ApiError(400, "Email cannot be empty", [], "ValidationError");
+  if (Object.prototype.hasOwnProperty.call(updateData, "email")) {
+    if (!updateData.email || String(updateData.email).trim() === "") {
+      throw new ApiError(400, "Email cannot be empty", [], "ValidationError");
+    }
   }
 
-  if (!updateData.name && updateData.name !== "") {
-    throw new ApiError(400, "Name cannot be empty", [], "ValidationError");
+  if (Object.prototype.hasOwnProperty.call(updateData, "name")) {
+    if (!updateData.name || String(updateData.name).trim() === "") {
+      throw new ApiError(400, "Name cannot be empty", [], "ValidationError");
+    }
   }
 
   if (
@@ -78,8 +82,10 @@ const updateUserByIdValidation = asyncHandler(async (req, res, next) => {
     );
   }
 
-  if (!["viewer", "analyst", "admin"].includes(updateData.role)) {
-    throw new ApiError(400, "Invalid role provided", [], "ValidationError");
+  if (Object.prototype.hasOwnProperty.call(updateData, "role")) {
+    if (!["viewer", "analyst", "admin"].includes(updateData.role)) {
+      throw new ApiError(400, "Invalid role provided", [], "ValidationError");
+    }
   }
 
   next();

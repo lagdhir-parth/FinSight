@@ -62,22 +62,18 @@ const dashboardStats = asyncHandler(async (req, res) => {
   }, {});
 
   return res.status(200).json(
-    new ApiResponse(
-      200,
-      {
-        totalRecords,
-        totalIncome,
-        totalExpense,
-        netBalance,
-        userTotalRecords,
-        userTotalIncome,
-        userTotalExpense,
-        categoryWiseStats,
-        recentActivity,
-        MonthlyTrend,
-      },
-      "Dashboard stats retrieved successfully",
-    ),
+    new ApiResponse(200, "Dashboard stats retrieved successfully", {
+      totalRecords,
+      totalIncome,
+      totalExpense,
+      netBalance,
+      userTotalRecords,
+      userTotalIncome,
+      userTotalExpense,
+      categoryWiseStats,
+      recentActivity,
+      MonthlyTrend,
+    }),
   );
 });
 

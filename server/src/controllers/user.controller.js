@@ -2,6 +2,7 @@ import asyncHandler from "../utils/asyncHandler.js";
 import ApiError from "../utils/apiError.js";
 import ApiResponse from "../utils/apiResponse.js";
 import User from "../models/user.model.js";
+import Record from "../models/record.model.js";
 
 const getAllUsers = asyncHandler(async (req, res) => {
   const users = await User.find().select("-password -refreshToken").lean();
@@ -74,6 +75,11 @@ const deleteUserById = asyncHandler(async (req, res) => {
     throw new ApiError(404, "User not found");
   }
 
+  await Record.updateMany(
+    { createdBy: id },
+    { $set: { createdBy: null, isDeleted: true } }
+  );
+
   return res
     .status(200)
     .json(new ApiResponse(200, "User deleted successfully", user));
@@ -89,6 +95,11 @@ const deleteProfile = asyncHandler(async (req, res) => {
   if (!user) {
     throw new ApiError(404, "User not found");
   }
+
+  await Record.updateMany(
+    { createdBy: userId },
+    { $set: { createdBy: null, isDeleted: true } }
+  );
 
   return res
     .status(200)

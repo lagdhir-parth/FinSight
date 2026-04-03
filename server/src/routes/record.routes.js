@@ -10,6 +10,8 @@ import {
   permanentlyDeleteRecordById,
   updateUserRecordById,
   searchRecords,
+  getSoftDeletedRecords,
+  restoreRecordById,
 } from "../controllers/record.controller.js";
 import {
   createRecordValidation,
@@ -33,6 +35,7 @@ router.get("/", getRecordByPagination);
 router.get("/total-record-count", getRecordsCount);
 router.get("/my-records", getUserRecords);
 router.get("/search", searchRecords);
+router.get("/soft-deleted", verifyRole(["admin"]), getSoftDeletedRecords);
 router.get("/:id", recordIdValidation, getRecordById);
 router.patch(
   "/update-my-record/:id",
@@ -56,6 +59,12 @@ router.delete(
   verifyRole(["admin"]),
   recordIdValidation,
   permanentlyDeleteRecordById,
+);
+router.patch(
+  "/restore/:id",
+  verifyRole(["admin"]),
+  recordIdValidation,
+  restoreRecordById,
 );
 
 export default router;
