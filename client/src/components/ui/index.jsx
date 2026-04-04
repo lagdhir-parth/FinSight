@@ -245,6 +245,39 @@ export function StatCard({ label, value, sub, accent, icon: Icon }) {
   );
 }
 
+// ─── Page Loader (Suspense fallback) ─────────────────────────────────
+export function PageLoader() {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        minHeight: "100vh",
+        background: "var(--bg-base)",
+        flexDirection: "column",
+        gap: "16px",
+      }}
+    >
+      <div
+        className="animate-spin rounded-full"
+        style={{
+          width: 40,
+          height: 40,
+          border: "3px solid var(--border)",
+          borderTopColor: "var(--accent)",
+        }}
+      />
+      <p
+        className="text-sm"
+        style={{ color: "var(--text-muted)", fontFamily: "Syne" }}
+      >
+        Loading…
+      </p>
+    </div>
+  );
+}
+
 // ─── Pagination ──────────────────────────────────────────────────────
 export function Pagination({ currentPage, totalPages, onPageChange }) {
   if (totalPages <= 1) return null;
